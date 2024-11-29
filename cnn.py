@@ -2,7 +2,10 @@ import numpy as np
 import scipy.signal as signal
 
 class cnn:
-    def __init__(self, input_size, num_kernels, kernel_size):
+    def __init__(self, 
+                 input_size, 
+                 num_kernels, 
+                 kernel_size):
         """
         Constructor for the cnn class. Initializes key attributes for the CNN: 
             - input_size: Size of the input image 
@@ -13,6 +16,9 @@ class cnn:
         self.kernel_size = kernel_size
         self.num_kernels = num_kernels
 
+        self.image = None 
+
+    
     def __repr__(self):
         """
         Summarizes the initialized CNN object. 
@@ -85,8 +91,7 @@ class cnn:
         """
         The core function that orchestrates the convolution process for the entire image for the entire image  
         """
-        
-        
+         
         patches = self.generate_cnn_patches(img, stride, padding)
         num_channels, input_h, input_w = img.shape ##need to indexing value for right shape
         self.output_shape = (self.num_kernels, input_h - self.kernel_size + 1, input_w - self.kernel_size + 1)
@@ -111,21 +116,22 @@ class cnn:
                         k += 1
                 y += 1
         
-
+        
         return self.output
 
-    def MaxPool(kernel_size , stride=1): 
+    def MaxPool(self, kernel_size , stride=1): 
+        """
+        Subsampling layer... 
         """
         
-        """
         
     def MinPool(kernel_size , stride =1): 
         """
-
+        Subsampling layer... 
         """
     def AvgPool(kernel_size , stride = 1): 
         """
-        
+        Subsampling layer...
         """
 
     #max_pooling(self, convolved_img, stride)               
