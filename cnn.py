@@ -2,10 +2,7 @@ import numpy as np
 import scipy.signal as signal
 
 class cnn:
-    def __init__(self, 
-                 input_size, 
-                 num_kernels, 
-                 kernel_size):
+    def __init__(self, input_size, num_kernels, kernel_size):
         """
         Constructor for the cnn class. Initializes key attributes for the CNN: 
             - input_size: Size of the input image 
@@ -118,31 +115,173 @@ class cnn:
         
         
         return self.output
-
-    def MaxPool(self, kernel_size , stride=1): 
+    
+    def MaxPool(self, conv_image , kernel_size , stride=1): 
         """
         Subsampling layer... 
+        
+        """
+        # Get input dimensions 
+        input_height , input_width = conv_image.shape
+    
+        # Get the output dimensions 
+        output_height = (input_height - kernel_size) // stride+1 
+        output_width = (input_width - kernel_size) // stride+1 
+    
+        # 1. Initialize an np 2-D array for pooling kernel 
+        pooled_ = np.zeros(( output_height, output_width )) 
+        
+        #print(pooled_.shape) 
+            
+        # 2. Scan through the input image and get the max 
+        
+        for j in range(0, input_height - kernel_size + 1, stride):
+            for i in range(0, input_width - kernel_size + 1, stride):
+                
+                # Define the current window
+                window = conv_image[j:j + kernel_size, i:i + kernel_size]
+    
+                #print("--- window.shape :" , window.shape) 
+    
+                # Get the max value in the window
+                max_value = np.max(window)
+    
+                # Map max value to the output matrix
+                pooled_[j // stride, i // stride] = max_value
+    
+        return pooled_ 
+
+    def MinPool(self, conv_image, kernel_size, stride=1):
+        """
+        Min pooling function.
+        """
+        # Get input dimensions
+        input_height, input_width = conv_image.shape
+    
+        # Get the output dimensions
+        output_height = (input_height - kernel_size) // stride + 1
+        output_width = (input_width - kernel_size) // stride + 1
+    
+        # Initialize an output matrix for pooling
+        pooled_ = np.zeros((output_height, output_width))
+    
+        # Scan through the input image
+        for j in range(0, input_height - kernel_size + 1, stride):
+            for i in range(0, input_width - kernel_size + 1, stride):
+                # Define the current window
+                window = conv_image[j:j + kernel_size, i:i + kernel_size]
+                
+                # Get the min value in the window
+                min_value = np.min(window)
+                
+                # Map min value to the output matrix
+                pooled_[j // stride, i // stride] = min_value
+    
+        return pooled_
+     
+        
+    def AvgPool(self, conv_image, kernel_size, stride=1):
+        """
+        Average pooling function.
+        """
+        # Get input dimensions
+        input_height, input_width = conv_image.shape
+    
+        # Get the output dimensions
+        output_height = (input_height - kernel_size) // stride + 1
+        output_width = (input_width - kernel_size) // stride + 1
+    
+        # Initialize an output matrix for pooling
+        pooled_ = np.zeros((output_height, output_width))
+    
+        # Scan through the input image
+        for j in range(0, input_height - kernel_size + 1, stride):
+            for i in range(0, input_width - kernel_size + 1, stride):
+                # Define the current window
+                window = conv_image[j:j + kernel_size, i:i + kernel_size]
+                
+                # Get the average value in the window
+                avg_value = np.mean(window)
+                
+                # Map average value to the output matrix
+                pooled_[j // stride, i // stride] = avg_value
+    
+        return pooled_
+  
+    # Loss functions for backpropagation 
+    def cross_entropy(output, y_target):
+        """
+        Description: 
+        -----------
+        Calculates cross-entropy loss per samples 
+        
+        Arguments: 
+        ----------
+        output : np.array
+        y_target : np.array 
+
+        output (the prediction) and y_target are 1D vector of same length 
+
+        Returns: 
+        -------
+         
         """
         
+        return -np.sum(np.log(output + 1e-9) * y_target, axis=1)
         
-    def MinPool(kernel_size , stride =1): 
+    
+    def compute_cost(output, y_target):
         """
-        Subsampling layer... 
-        """
-    def AvgPool(kernel_size , stride = 1): 
-        """
-        Subsampling layer...
-        """
+        Description: 
+        ------------
+        Calculate avg loss for a batch. 
+        
+        Arguments: 
+        ----------
 
-    #max_pooling(self, convolved_img, stride)               
-
+        Returns: 
+        -------
 
         
-    #def max_pooling(self, convolved_img, stride)
+        """
+        
+        return np.mean(cross_entropy(output, y_target))
 
-                                
 
 
+    
+
+    
+    def backward(self): 
+        """
+        Description: 
+        -----------
+        The backpropagation in CNN. By convention, the backward() function does not have any paramters in pytorch. 
+        We will keep our implementation consistent with that of pytorch.
+        
+
+        Arguments: 
+        ----------
+
+        Returns: 
+        --------
+
+
+
+        # NOTE: To do backprop, I need to know the architecture of the network. For now, I assume it has two CNNs and then one flattened layer 
+        
+        """
+    
+        
+        # dL/dy : This is the cross entropy loss 
+
+        # dL/dw 
+
+        #
+
+        # Last step: weight update 
+
+        
     # def generate_cnn_patches(self, image):
     #     num_channel, image_h, image_w = image.shape
 
