@@ -59,6 +59,7 @@ class cnn:
                         row += 1
                     else:
                         col += 1
+            convoluted_output[i] += self.biases[i]
         
         return convoluted_output
     
@@ -104,8 +105,49 @@ class cnn:
                     
                     dl_dk[i, j, k] = weight_gradient
         self.weight_gradient = np.sum(dl_dk, axis=0)
-          
-        return self.weight_gradient
+
+        dl_db = np.zeros(self.out_channel)
+
+        for i in range(dl_dz.shape[0]):
+            for j in range(dl_dz.shape[0]):
+                dl_db[j] = dl_db[j] + dl_dz[i, j].sum()
+        
+        self.bias_gradient = dl_db
+
+        dl_dx = np.zeros(self.input.shape)
+
+
+        for i in range(dl_dz.shape[0]):
+            y = np.zeros((self.in_channel, self.input.shape[2], self.input.shape[3]))
+            for j in range(dl_dz.shape[1]):
+                for k in range(self.in_channel):
+                    curr_kernel = self.kernels[j, k]
+                    curr_dl_dz = dl_dz[i, j]
+                    out = np.zeros((y.shape[1:]))
+                    for l in range(out.shape[0]):
+                        for m in range(out.shape[1]):
+                            patch = curr_dl_dz[l : l + self.kernel_size, m : m + self.kernel_size]
+                            out[l, m] = (curr_dl_dz * curr_kernel).sum()
+                    y[k] += out
+            
+            for p in range(self.in_channel):
+                for n in range(self.input.shape[2]):
+                    for o in range(self.input.shape[3]):
+                        dl_dx[i, p, n, o] = y[p, n, o]
+        
+        self.dl_dx = dl_dx
+
+        return self.dl_dx
+
+                    
+
+
+
+
+                    
+
+
+
 
 
 
