@@ -18,9 +18,6 @@ class Activation:
     def sigmoid(self, a):
         return 1 / (1 + np.exp(-a))
 
-    def softmax(self, a):
-        return np.exp(a) / np.sum(np.exp(a), axis=1, keepdims=True)
-
     def dev_identity(self, x):
         return 1
 
@@ -32,10 +29,6 @@ class Activation:
 
     def dev_sigmoid(self, x):
         return self.sigmoid(x) * (1 - self.sigmoid(x))
-
-    def dev_softmax(self, z):
-        ## for CE backpropagration softmax is combined with CE.
-        return z
 
     def forward(self, a):
         if self.name == "identity":
@@ -55,7 +48,7 @@ class Activation:
 
         else:
             raise ValueError(
-                f"Unknown activation function: {self.name}. Please select 'identity', 'relu', 'tanh', 'sigmoid', 'cross_entropy' "
+                f"Unknown activation function: {self.name}. Please select 'identity', 'relu', 'tanh', 'sigmoid' "
             )
 
     def backward(self, a):
@@ -71,10 +64,7 @@ class Activation:
         elif self.name == "sigmoid":
             return self.dev_sigmoid(a)
 
-        elif self.name == "softmax":
-            return self.dev_softmax(a)
-
         else:
             raise ValueError(
-                f"Unknown activation function: {self.name}. Please select 'identity', 'relu', 'tanh', 'sigmoid', 'cross_entropy' "
+                f"Unknown activation function: {self.name}. Please select 'identity', 'relu', 'tanh', 'sigmoid' "
             )
