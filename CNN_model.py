@@ -42,24 +42,22 @@ class cnn:
         conv_mat = signal.correlate2d(patch, kernel, mode='valid')
         return conv_mat
     
-    def convolve(self, img):
+    def convolve(self, img, kernel):
         patches = self.generate_cnn_patches(img)
         _, _, output_h, output_w = self.output_shape
         
-        convoluted_output_shape = (self.out_channel, output_h, output_w)
+        convoluted_output_shape = (output_h, output_w)
         convoluted_output = np.zeros((convoluted_output_shape))
 
-        for i in range(self.out_channel):
-            for j in range(self.in_channel):
-                row, col = 0, 0
-                for patch in patches[j]:
-                    convoluted_output[i][row][col] = self.convolute(patch, self.kernels[i][j])
-                    if col >= output_w - 1:
-                        col = 0
-                        row += 1
-                    else:
-                        col += 1
-            convoluted_output[i] += self.biases[i]
+        for j in range(self.in_channel):
+            row, col = 0, 0
+            for patch in patches[j]:
+                convoluted_output[row][col] = self.convolute(patch, kernel)
+                if col >= output_w - 1:
+                    col = 0
+                    row += 1
+                else:
+                    col += 1
         
         return convoluted_output
     
@@ -83,8 +81,11 @@ class cnn:
         self.input = X_padded
 
         for i, image in enumerate(X_padded):
-            convoluted_image = self.convolve(image)
-            self.output[i] = convoluted_image
+            for j in range(self.out_channel):
+                        for m in range(self.in_channel):
+                            cur_kernel = self.kernels[j, m]
+                            conv_img = self.convolute(image[m], cur_kernel)
+                            self.output[i, j] += conv_img + self.biases[j]
 
         return self.output
     
@@ -97,7 +98,6 @@ class cnn:
                 for k in range(self.in_channel):
                     curr_x = self.input[i, k] #dz_dk
                     curr_dl_dz = dl_dz[i, j] #k_h, k_w = curr_dl_dz.shape
-
                     for l in range(self.kernel_size):
                         for m in range(self.kernel_size):
                             patch = curr_x[l:l+curr_dl_dz.shape[0], m:m+curr_dl_dz.shape[1]]
@@ -111,23 +111,35 @@ class cnn:
         for i in range(dl_dz.shape[0]):
             for j in range(dl_dz.shape[0]):
                 dl_db[j] = dl_db[j] + dl_dz[i, j].sum()
-        
+
         self.bias_gradient = dl_db
 
+
         dl_dx = np.zeros(self.input.shape)
+        
+        padding_height = self.kernels.shape[2] - 1
+        padding_height = self.kernels.shape[3] - 1
+
+        dl_dz_padded = np.pad(
+                dl_dz,
+                pad_width=((0, 0), (0, 0), (padding_height, padding_height), (padding_height, padding_height)),
+                mode='constant',
+                constant_values=0
+            )
+        rot_kernels = self.kernels
 
 
-        for i in range(dl_dz.shape[0]):
+        for i in range(dl_dz_padded.shape[0]):
             y = np.zeros((self.in_channel, self.input.shape[2], self.input.shape[3]))
-            for j in range(dl_dz.shape[1]):
+            for j in range(self.out_channel):
                 for k in range(self.in_channel):
                     curr_kernel = self.kernels[j, k]
-                    curr_dl_dz = dl_dz[i, j]
-                    out = np.zeros((y.shape[1:]))
+                    curr_dl_dz = dl_dz_padded[i, j]
+                    out = np.zeros((self.input.shape[2:]))
                     for l in range(out.shape[0]):
                         for m in range(out.shape[1]):
                             patch = curr_dl_dz[l : l + self.kernel_size, m : m + self.kernel_size]
-                            out[l, m] = (curr_dl_dz * curr_kernel).sum()
+                            out[l, m] = (patch * curr_kernel).sum()
                     y[k] += out
             
             for p in range(self.in_channel):
@@ -137,7 +149,7 @@ class cnn:
         
         self.dl_dx = dl_dx
 
-        return self.dl_dx
+        return self.weight_gradient, self.bias_gradient, self.dl_dx
 
                     
 
