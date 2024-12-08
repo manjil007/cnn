@@ -7,28 +7,18 @@ import os
 So far: There is only one pooling layer that will pool from each channel 
 """
 
-def backward_max_pool(image_batch, pooling_layers): 
+def backward_max_pool(pooled_layer): 
     """
-    
-    Description: 
-    -----------
-    - The backpropagation of max pool layer. The parameter is a single 3D channel  
+    Source : https://www.educative.io/answers/how-to-backpropagate-through-max-pooling-layers
 
-    Parameters: 
-    -----------
-    - pooled_layer : The batch of input image. 
     
-    Returns : 
-    ---------
-    - HxW matrix which has for every entry in the matrix pooled_layer that is greater than 0, return 1. Otherwise 0. 
     
     """
 
-
-
+    
 
     
-    dL_wrt_pooling_layer  = (pooled_layers > 0).astype(int) 
+    dL_wrt_pooling_layer  = (pooled_layer > 0).astype(int) 
     return dL_wrt_pooling_layer
 
 

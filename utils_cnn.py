@@ -225,4 +225,66 @@ def backward_wrt_input(dL_dz, kernel ,stride=1):
     #print("output " , output.shape) 
 
     return output # this is dL/dx
+
+
+def max_pool_backward(d_out, input_matrix, pool_size, stride):
+    """
+    Description: 
+    ------------
+    - Backpropagation through max pooling layer for batch inputs. 
+    - The pooling layers are square 
+    - The batch of the input image is taken into consideration 
+
+
+
+    Parameters:
+    -----------
+    - d_out (numpy.ndarray): Gradient of the loss w.r.t. the output of the max-pooling layer, 
+                             shape (B, C, out_height, out_width).
+
+                             
+    - input_matrix (numpy.ndarray): max-pooling layer input during forward pass, shape is (B, C, H, W).
+    - pool_size (int): square pooling window
+    
+    - stride (int): stride operation
+
+    Returns:
+    --------
+    - d_input (numpy.ndarray): Gradient of the loss w.r.t. the input of the max-pooling layer, 
+                               shape (batch, channel, height, width).
+    """
+    batch_size, channels, input_h, input_w = input_matrix.shape
+    _, _, output_h, output_w = d_out.shape
+
+    d_input = np.zeros_like(input_matrix) # initialize gradient wrt  input matrix
+    
+    for b in range(batch_size):  
+        
+        for c in range(channels):  
+            
+            for i in range(output_h):  
+                
+                for j in range(output_w):  
+                    
+                    start_h = i * stride
+                    start_w = j * stride
+                    
+                    end_h = start_h + pool_size
+                    end_w = start_w + pool_size
+
+                    pooling_region = input_matrix[b, c, start_h:end_h, start_w:end_w]
+
+                    max_val = np.max(pooling_region)
+
+                    for m in range(pool_size):
+                        
+                        for n in range(pool_size):
+                            
+                            if pooling_region[m, n] == max_val:
+                                
+                                d_input[b, c, start_h + m, start_w + n] += d_out[b, c, i, j]
+                                break  # exit once when the max value gradient is assigned - 
+
+    return d_input
+
  
