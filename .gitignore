@@ -166,3 +166,5 @@ data/
 .vscode/
 node_modules/
 test.ipynb/
+
+.conda/
