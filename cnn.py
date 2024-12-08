@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.signal as signal
 
+
 class cnn:
     def __init__(self, input_size, num_kernels, kernel_size):
         """
@@ -17,7 +18,6 @@ class cnn:
         """
         Summarizes the initialized CNN object. 
         """
-        
         
         return (f"cnn(num_input={self.num_input}, num_output={self.num_output}, "
                 f"kernel_size={self.kernel_size}, stride={self.stride}, padding={self.padding})")
@@ -85,7 +85,6 @@ class cnn:
         """
         The core function that orchestrates the convolution process for the entire image for the entire image  
         """
-        
         
         patches = self.generate_cnn_patches(img, stride, padding)
         num_channels, input_h, input_w = img.shape ##need to indexing value for right shape

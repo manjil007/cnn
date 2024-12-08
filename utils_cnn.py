@@ -105,3 +105,5 @@ def MaxPool( conv_image , kernel_size , stride=1):
                     pooled_[c, j // stride, i // stride] = max_value # fixed to get integer size
         
         return pooled_
+
+# Get the backprop wrt to the input 
