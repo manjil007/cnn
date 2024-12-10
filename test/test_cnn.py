@@ -1,5 +1,9 @@
 import os
 import sys
+
+print(os.getcwd())
+sys.path.append(os.getcwd())
+
 import numpy as np
 from CNN_model import cnn
 

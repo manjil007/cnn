@@ -8,12 +8,12 @@ class TwoLayerNetwork:
     Creating the 2 layer linear network.
     """
 
-    def __init__(self, input: np.ndarray, hidden_size: int = 12, out_size: int = 10):
+    # def __init__(self, input: np.ndarray, hidden_size: int = 12, out_size: int = 10):
+    def __init__(self, input_size: int, hidden_size: int = 12, out_size: int = 10):
         np.random.seed(5)
-        self.input = input
         self.hidden_size = hidden_size
         self.out_size = out_size
-        self.batch, self.in_size = self.input.shape
+        self.in_size = input_size
         self._weight_init()
         self._gradient_init()
 
@@ -33,8 +33,8 @@ class TwoLayerNetwork:
         self.dw2 = np.zeros_like(self.W2)
         self.db2 = np.zeros_like(self.B2)
 
-    def forward(self, act: Activation):
-
+    def forward(self, input: np.ndarray, act: Activation):
+        self.input = input
         self.Z1 = self.input @ self.W1 + self.B1  # z = x2 + b
         self.A1 = act.forward(self.Z1)
         self.Z2 = self.A1 @ self.W2 + self.B2
@@ -45,6 +45,7 @@ class TwoLayerNetwork:
         self.dw2 = dz.T @ self.A1
         self.db2 = np.sum(dz, axis=0)
         dx2 = dz @ self.W2.T
+        
 
         # Activation layer backpropagation,
         # Activation layer derivation with respect to what was passed during forward propagation which is Z1

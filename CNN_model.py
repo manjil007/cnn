@@ -38,27 +38,52 @@ class cnn:
 
         return patches
     
-    def convolute(self, patch, kernel):
-        conv_mat = signal.correlate2d(patch, kernel, mode='valid')
-        return conv_mat
+    # def convolute(self, patch, kernel):
+    #     conv_mat = signal.correlate2d(patch, kernel, mode='valid')
+    #     return conv_mat
     
-    def convolve(self, img, kernel):
-        patches = self.generate_cnn_patches(img)
-        _, _, output_h, output_w = self.output_shape
+    # def convolve(self, img, kernel):
+    #     patches = self.generate_cnn_patches(img)
+    #     _, _, output_h, output_w = self.output_shape
         
-        convoluted_output_shape = (output_h, output_w)
-        convoluted_output = np.zeros((convoluted_output_shape))
+    #     convoluted_output_shape = (output_h, output_w)
+    #     convoluted_output = np.zeros((convoluted_output_shape))
 
-        for j in range(self.in_channel):
-            row, col = 0, 0
-            for patch in patches[j]:
-                convoluted_output[row][col] = self.convolute(patch, kernel)
-                if col >= output_w - 1:
-                    col = 0
-                    row += 1
-                else:
-                    col += 1
+    #     for j in range(self.in_channel):
+    #         row, col = 0, 0
+    #         for patch in patches[j]:
+    #             convoluted_output[row][col] = self.convolute(patch, kernel)
+    #             if col >= output_w - 1:
+    #                 col = 0
+    #                 row += 1
+    #             else:
+    #                 col += 1
         
+    #     return convoluted_output
+
+    def convolve(self, img, kernel):
+   
+        img_h, img_w = img.shape
+        kernel_h, kernel_w = kernel.shape
+
+        # Calculate the output dimensions
+        output_h = (img_h - kernel_h) // self.stride + 1
+        output_w = (img_w - kernel_w) // self.stride + 1
+
+        # Initialize the output matrix
+        convoluted_output = np.zeros((output_h, output_w))
+
+        # Perform convolution
+        for i in range(0, output_h):
+            for j in range(0, output_w):
+                # Determine the region of the input image to apply the kernel
+                start_i = i * self.stride
+                start_j = j * self.stride
+                region = img[start_i:start_i + kernel_h, start_j:start_j + kernel_w]
+                
+                # Compute the convolution (element-wise multiplication and sum)
+                convoluted_output[i, j] = np.sum(region * kernel)
+
         return convoluted_output
     
     def forward(self, X):
@@ -84,7 +109,9 @@ class cnn:
             for j in range(self.out_channel):
                         for m in range(self.in_channel):
                             cur_kernel = self.kernels[j, m]
-                            conv_img = self.convolute(image[m], cur_kernel)
+                            conv_img = self.convolve(image[m], cur_kernel)
+                            if self.output[i, j].shape != (conv_img + self.biases[j]).shape:
+                                print("different shape")
                             self.output[i, j] += conv_img + self.biases[j]
 
         return self.output
@@ -126,14 +153,14 @@ class cnn:
                 mode='constant',
                 constant_values=0
             )
-        rot_kernels = self.kernels
+        rot_kernels = self.kernels[:, :, ::-1, ::-1]
 
 
         for i in range(dl_dz_padded.shape[0]):
             y = np.zeros((self.in_channel, self.input.shape[2], self.input.shape[3]))
             for j in range(self.out_channel):
                 for k in range(self.in_channel):
-                    curr_kernel = self.kernels[j, k]
+                    curr_kernel = rot_kernels[j, k]
                     curr_dl_dz = dl_dz_padded[i, j]
                     out = np.zeros((self.input.shape[2:]))
                     for l in range(out.shape[0]):
