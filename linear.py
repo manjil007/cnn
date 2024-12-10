@@ -45,7 +45,6 @@ class TwoLayerNetwork:
         self.dw2 = dz.T @ self.A1
         self.db2 = np.sum(dz, axis=0)
         dx2 = dz @ self.W2.T
-        
 
         # Activation layer backpropagation,
         # Activation layer derivation with respect to what was passed during forward propagation which is Z1
