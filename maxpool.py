@@ -20,7 +20,7 @@ class MaxPool:
         # it is for backproagration of input.
         # same sape as input we can know the index for it when needed
         x = input
-        self.forward_index = np.zeros_like(x)
+        self.forward_index = np.full(x.shape, None)
         B, C, H, W = x.shape
         max_shape = int(math.floor(H - self.size) / self.size + 1)
         pool_x = np.zeros((B, C, max_shape, max_shape))
@@ -64,5 +64,5 @@ class MaxPool:
                     w1 = 0
                     for w in range(W):
                         if self.forward_index[b, c, h, w]:
-                            dx[b, c, h, w] = dz[b, c, h1, w1]
+                            dx[b, c, h, w] = float(dz[b, c, h1, w1])
         return dx
