@@ -16,7 +16,7 @@ class cnn:
             self.kernel_size,
             self.kernel_size,
         )
-        self.kernels = np.random.randint(1, 4, self.kernels_shape) # * 0.01
+        self.kernels = np.random.rand(*self.kernels_shape)  * 0.01
         self.biases = np.zeros(self.out_channel)
 
 
@@ -106,7 +106,7 @@ class cnn:
                             weight_gradient[l, m] = (patch * curr_dl_dz).sum()
 
                     dl_dk[b, o, k] = weight_gradient
-        self.weight_gradient = np.sum(dl_dk, axis=0)
+        self.weight_gradient = np.sum(dl_dk, axis=0) 
 
         # print("dl_dk = ", dl_dk[0][1][2])
 
@@ -148,7 +148,7 @@ class cnn:
 
         self.dl_dx = dl_dx
 
-        return  self.weight_gradient, self.bias_gradient, self.dl_dx
+        return self.dl_dx
     
     def update_params(self, lr):
         self.kernels -= lr * self.weight_gradient
@@ -175,3 +175,9 @@ class cnn:
         for h in range(y.shape[0]):
             for w in range(y.shape[1]):
                 out[b, c, h, w] = y[h, w]
+
+
+    def zero_gradient(self):
+        self.dl_dx = np.zeros_like(self.dl_dx)
+        self.weight_gradient = np.zeros_like(self.weight_gradient)
+        self.bias_gradient = np.zeros_like(self.bias_gradient)

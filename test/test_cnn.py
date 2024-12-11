@@ -13,7 +13,7 @@ def test_cnn(x: np.ndarray, kernel_size: int, stride: int, padding: int):
     out_channel = 2
     cnn_model = cnn(in_channel, out_channel, kernel_size, stride, padding)
     output = cnn_model.forward(x)
-    dl_dk, dl_db, dl_dx = cnn_model.backward(output)
+    dl_dx = cnn_model.backward(output)
 
     print("Shape of input = ", x.shape)
     print(

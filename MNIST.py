@@ -44,7 +44,7 @@ test_labels_numpy = test_labels_numpy[:50]
 train_images_numpy = train_images_numpy[:500]
 train_labels_numpy = train_labels_numpy[:500]
 
-epochs = 2
+epochs = 4
 model = LeNet5(in_channel=1, lr=0.001)
 
 batch_size = 32
@@ -56,42 +56,45 @@ for epoch in range(epochs):
     train_labels_numpy = train_labels_numpy[indices]
 
     num_batches = len(train_images_numpy) // batch_size
-
+    total_loss = 0
     for i in range(num_batches):
         start_idx = i * batch_size
         end_idx = start_idx + batch_size
         batch_images = train_images_numpy[start_idx:end_idx]
         batch_labels = train_labels_numpy[start_idx:end_idx]
 
-        logit = model.forward(batch_images)
+        probabilities = model.forward(batch_images)
         
         Y = one_hot_y(batch_labels, 10)
 
-        loss = cross_entropy_loss(logit, Y)
+        loss = cross_entropy_loss(probabilities, Y)
+        total_loss += loss
 
         # Print loss for the current batch
         print(f"  Batch {i + 1}/{num_batches}, Loss: {loss:.4f}")
 
-        gradient = logit - Y
+        gradient = probabilities - Y
 
         model.backward(gradient)
 
         model.update_params()
+        
+        model.zero_gradient()
 
-        logit = model.forward(test_images_numpy)
-
-        predictions = np.argmax(logit)
-
-        correct_predictions = np.sum(predictions == test_labels_numpy)
-
-        accuracy = correct_predictions / len(test_labels_numpy)
+        probabilities = model.forward(batch_images)
+        predictions = np.argmax(probabilities)
+        correct_predictions = np.sum(predictions == batch_labels)
+        accuracy = correct_predictions / len(batch_labels
+                                             )
 
         print(f"Accuracy: {accuracy * 100:.2f}%")
+    print(f"Epoch : {epoch}, loss {total_loss/num_batches}")
 
 
-logit = model.forward(test_images_numpy)
 
-predictions = np.argmax(logit)
+probabilities = model.forward(test_images_numpy)
+
+predictions = np.argmax(probabilities)
 
 correct_predictions = np.sum(predictions == test_labels_numpy)
 
