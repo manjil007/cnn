@@ -15,7 +15,7 @@ class TwoLayerNetwork:
         self.out_size = out_size
         self.in_size = input_size
         self._weight_init()
-        self._gradient_init()
+        # self._gradient_init()
 
     def _weight_init(self):
         # Weight and bias initialization
@@ -42,7 +42,7 @@ class TwoLayerNetwork:
 
     def backward(self, dz, act_der: Activation):
         # Second layer backpropagation
-        self.dw2 = dz.T @ self.A1
+        self.dw2 = (dz.T @ self.A1).T
         self.db2 = np.sum(dz, axis=0)
         dx2 = dz @ self.W2.T
 
@@ -50,10 +50,19 @@ class TwoLayerNetwork:
         # Activation layer derivation with respect to what was passed during forward propagation which is Z1
         dz1 = dx2 * act_der.backward(self.Z1)
 
-        # First layer backprogation (same as second layer last layer output is dz1)
-        self.dw1 = dz1.T @ self.input
+
+        self.dw1 = (dz1.T @ self.input).T
         self.db1 = np.sum(dz1, axis=0)
         dx1 = dz1 @ self.W1.T
 
-        # Returning dx1 becouse this will be unflatten to become the dl/dz for convolution layer.
         return dx1
+    
+    def update_params(self, lr):
+        self.W1 -= lr * self.dw1
+        self.B1 -= lr * self.db1
+
+        self.W2 -= lr * self.dw2
+        self.B2 -= lr * self.db2
+
+
+

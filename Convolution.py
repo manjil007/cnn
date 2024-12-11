@@ -15,54 +15,9 @@ class cnn:
             self.kernel_size,
             self.kernel_size,
         )
-        self.kernels = np.random.rand(*self.kernels_shape)
+        self.kernels = np.random.rand(*self.kernels_shape) * 0.01
         self.biases = np.random.rand(self.out_channel)
 
-    def generate_cnn_patches(self, image):
-        num_channel, image_h, image_w = image.shape
-
-        if isinstance(self.kernel_size, int):
-            kernel_h = kernel_w = self.kernel_size
-        elif isinstance(self.kernel_size, tuple):
-            kernel_h, kernel_w = self.kernel_size
-
-        num_channel, image_h, image_w = image.shape
-        # Initialize storage for patches
-        patches = []
-        for channel in range(num_channel):
-            channel_patch = []
-            for i in range(0, image_h - kernel_h + 1, self.stride):
-                for j in range(0, image_w - kernel_w + 1, self.stride):
-                    patch = image[channel, i : i + kernel_h, j : j + kernel_w]
-                    channel_patch.append(patch)
-            channel_patch = np.array(channel_patch)
-            patches.append(channel_patch)
-        patches = np.array(patches)
-
-        return patches
-
-    # def convolute(self, patch, kernel):
-    #     conv_mat = signal.correlate2d(patch, kernel, mode='valid')
-    #     return conv_mat
-
-    # def convolve(self, img, kernel):
-    #     patches = self.generate_cnn_patches(img)
-    #     _, _, output_h, output_w = self.output_shape
-
-    #     convoluted_output_shape = (output_h, output_w)
-    #     convoluted_output = np.zeros((convoluted_output_shape))
-
-    #     for j in range(self.in_channel):
-    #         row, col = 0, 0
-    #         for patch in patches[j]:
-    #             convoluted_output[row][col] = self.convolute(patch, kernel)
-    #             if col >= output_w - 1:
-    #                 col = 0
-    #                 row += 1
-    #             else:
-    #                 col += 1
-
-    #     return convoluted_output
 
     def convolve(self, img, kernel):
 
@@ -118,9 +73,8 @@ class cnn:
                 for m in range(self.in_channel):
                     cur_kernel = self.kernels[j, m]
                     conv_img = self.convolve(image[m], cur_kernel)
-                    if self.output[i, j].shape != (conv_img + self.biases[j]).shape:
-                        print("different shape")
-                    self.output[i, j] += conv_img + self.biases[j]
+                    self.output[i, j] += conv_img
+                self.output[i, j] += self.biases[j]
 
         return self.output
 
@@ -151,26 +105,30 @@ class cnn:
                     dl_dk[i, j, k] = weight_gradient
         self.weight_gradient = np.sum(dl_dk, axis=0)
 
+        # print("dl_dk = ", dl_dk[0][1][2])
+
         dl_db = np.zeros(self.out_channel)
 
         for i in range(dl_dz.shape[0]):
-            for j in range(dl_dz.shape[0]):
+            for j in range(dl_dz.shape[1]):
                 dl_db[j] = dl_db[j] + dl_dz[i, j].sum()
 
         self.bias_gradient = dl_db
 
+        # print("dl_db = ", dl_db[0])
+
         dl_dx = np.zeros(self.input.shape)
 
         padding_height = self.kernels.shape[2] - 1
-        padding_height = self.kernels.shape[3] - 1
+        padding_width = self.kernels.shape[3] - 1
 
         dl_dz_padded = np.pad(
             dl_dz,
             pad_width=(
                 (0, 0),
                 (0, 0),
-                (padding_height, padding_height),
-                (padding_height, padding_height),
+                (padding_height, padding_width),
+                (padding_height, padding_width),
             ),
             mode="constant",
             constant_values=0,
@@ -189,6 +147,8 @@ class cnn:
                             patch = curr_dl_dz[
                                 l : l + self.kernel_size, m : m + self.kernel_size
                             ]
+                            if patch.shape != curr_kernel.shape:
+                                print("not same shape")
                             out[l, m] = (patch * curr_kernel).sum()
                     y[k] += out
 
@@ -199,4 +159,11 @@ class cnn:
 
         self.dl_dx = dl_dx
 
-        return self.weight_gradient, self.bias_gradient, self.dl_dx
+        # print("dl_dx = ", dl_dx[0][1][2])
+
+        return self.dl_dx
+    
+    def update_params(self, lr):
+        self.kernels -= lr * self.weight_gradient
+        self.biases -= lr * self.bias_gradient
+
