@@ -6,7 +6,16 @@ class MaxPool:
     def __init__(self, size: int):
         self.size = size
 
-    def forward(self, input):
+    def forward(self, input: np.ndarray):
+        """Forward propagation of max pool
+
+        Args:
+            input (np.ndarray): Normally it is the output of the convolution layer
+
+        Returns:
+            _type_: np.ndarray,
+            It will be use as the input for the next layer.
+        """
         self.input = input
         # it is for backproagration of input.
         # same sape as input we can know the index for it when needed
@@ -37,6 +46,15 @@ class MaxPool:
         return pool_x
 
     def backward(self, dz: np.ndarray):
+        """Max pool backpropagation
+
+        Args:
+            dz (np.ndarray): dl/dz of the las layer.
+
+        Returns:
+            _type_: np.ndarray,
+            It return the dl/dx which will be used in previous layer as dl/dx if we have any previous layer before.
+        """
         dx = np.zeros_like(self.forward_index)
         B, C, H, W = self.forward_index.shape
         for b in range(B):
