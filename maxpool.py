@@ -60,9 +60,15 @@ class MaxPool:
         for b in range(B):
             for c in range(C):
                 h1 = 0
-                for h in range(H):
+                for h in range(0, H, self.size):
                     w1 = 0
-                    for w in range(W):
-                        if self.forward_index[b, c, h, w]:
-                            dx[b, c, h, w] = float(dz[b, c, h1, w1])
+                    for w in range(0, W, self.size):
+                        for i in range(self.size):
+                            for j in range(self.size):
+                                if self.forward_index[b, c, h + i, w + j]:
+                                    dx[b, c, h + i, w + j] = dz[b, c, h1, w1]
+                        w1 += 1
+                    h1 += 1
+
+            
         return dx

@@ -20,7 +20,7 @@ if __name__ == "__main__":
     print("POOLED OUTPUT")
     print(pooled_x)
 
-    dz = np.random.random_sample(pooled_x.shape)
+    dz = np.random.randint(1, 10, pooled_x.shape)
     print("RANDOM DZ FOR BCKPOPAGATION")
     print(dz)
 
