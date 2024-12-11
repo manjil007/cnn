@@ -18,7 +18,7 @@ if __name__ == "__main__":
     batch, feature, num_class = 100, 225, 10
     input = np.random.rand(batch, feature)
 
-    y = np.random.randint(0,10,batch)
+    y = np.random.randint(0, 10, batch)
     one_hot_y = one_hot_y(y, num_classes=10)
 
     act: Activation = Activation("relu")
