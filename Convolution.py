@@ -4,6 +4,7 @@ import scipy.signal as signal
 
 class cnn:
     def __init__(self, in_channel, out_channel, kernel_size, stride, padding):
+        np.random.seed(5)
         self.in_channel = in_channel
         self.out_channel = out_channel
         self.kernel_size = kernel_size
@@ -15,8 +16,8 @@ class cnn:
             self.kernel_size,
             self.kernel_size,
         )
-        self.kernels = np.random.rand(*self.kernels_shape) * 0.01
-        self.biases = np.random.rand(self.out_channel)
+        self.kernels = np.random.randint(1,3 , self.kernels_shape) # * 0.01
+        self.biases = np.zeros(self.out_channel)
 
 
     def convolve(self, img, kernel):
@@ -45,6 +46,9 @@ class cnn:
         return convoluted_output
 
     def forward(self, X):
+        self.input = X
+
+
         if self.padding > 0:
             # Apply padding to all images in the batch
             X_padded = np.pad(
@@ -65,8 +69,7 @@ class cnn:
         output_h = (input_h - self.kernel_size) // self.stride + 1
         output_w = (input_w - self.kernel_size) // self.stride + 1
         self.output_shape = (batch_size, self.out_channel, output_h, output_w)
-        self.output = np.zeros((batch_size, self.out_channel, output_h, output_w))
-        self.input = X_padded
+        self.output = np.zeros(self.output_shape)
 
         for i, image in enumerate(X_padded):
             for j in range(self.out_channel):

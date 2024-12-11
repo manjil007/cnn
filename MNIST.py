@@ -13,9 +13,8 @@ import gc
 
 import os
 import sys
-from CNN import LeNet5
+from cnn import LeNet5
 from utils import cross_entropy_loss, one_hot_y
-from max_pool import MaxPool, max_pool_backward
 
 
 transform = transforms.Compose([transforms.ToTensor()])
@@ -65,9 +64,7 @@ for epoch in range(epochs):
         batch_labels = train_labels_numpy[start_idx:end_idx]
 
         logit = model.forward(batch_images)
-
-        predictions = np.argmax(logit)
-
+        
         Y = one_hot_y(batch_labels, 10)
 
         loss = cross_entropy_loss(logit, Y)
