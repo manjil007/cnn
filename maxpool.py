@@ -70,5 +70,4 @@ class MaxPool:
                         w1 += 1
                     h1 += 1
 
-            
         return dx
