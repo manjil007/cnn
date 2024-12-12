@@ -9,12 +9,8 @@ from torchvision import datasets
 import torchvision.transforms as transforms
 import torchvision
 
-import gc
-
-import os
-import sys
-from CNN import LeNet5
-from utils import cross_entropy_loss, one_hot_y
+from cifarmodel import CifarModel
+from utils import cross_entropy_loss, one_hot_y, compute_accuracy
 
 
 transform = transforms.Compose([transforms.ToTensor()])
@@ -69,7 +65,7 @@ train_images_numpy = train_images_numpy
 train_labels_numpy = train_labels_numpy
 
 epochs = 3
-model = LeNet5(in_channel=3, lr=0.001)
+model = CifarModel(in_channel=3, lr=0.001)
 
 batch_size = 256
 
@@ -99,28 +95,14 @@ for epoch in range(epochs):
         print(f"  Batch {i + 1}/{num_batches}, Loss: {loss:.4f}")
 
         gradient = logit - Y
-
         model.backward(gradient)
 
         model.update_params()
-
-        logit = model.forward(test_images_numpy)
-
-        predictions = np.argmax(logit)
-
-        correct_predictions = np.sum(predictions == test_labels_numpy)
-
-        accuracy = correct_predictions / len(test_labels_numpy)
-
-        print(f"Accuracy: {accuracy * 100:.2f}%")
+        model.zero_gradient()
 
 
-logit = model.forward(test_images_numpy)
-
-predictions = np.argmax(logit)
-
-correct_predictions = np.sum(predictions == test_labels_numpy)
-
-accuracy = correct_predictions / len(test_labels_numpy)
-
+prob = model.forward(test_images_numpy)
+x_pred = np.argmax(prob, axis=1)
+accuracy = compute_accuracy(x_pred, test_labels_numpy)
 print(f"Accuracy: {accuracy * 100:.2f}%")
+
