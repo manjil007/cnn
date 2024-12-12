@@ -10,7 +10,9 @@ import torchvision.transforms as transforms
 import torchvision
 
 from cifarmodel import CifarModel
-from utils import cross_entropy_loss, one_hot_y, compute_accuracy
+from utils import cross_entropy_loss, one_hot_y, compute_accuracy, plot_loss_curve
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 
 transform = transforms.Compose([transforms.ToTensor()])
@@ -61,14 +63,15 @@ test_labels_numpy = test_labels_tensor.numpy()
 test_images_numpy = test_images_numpy[:50]
 test_labels_numpy = test_labels_numpy[:50]
 
-train_images_numpy = train_images_numpy
-train_labels_numpy = train_labels_numpy
+train_images_numpy = train_images_numpy[:6000]
+train_labels_numpy = train_labels_numpy[:6000]
 
 epochs = 3
 model = CifarModel(in_channel=3, lr=0.001)
 
-batch_size = 256
+batch_size = 120
 
+losses = []
 
 for epoch in range(epochs):
     indices = np.arange(len(train_images_numpy))
@@ -76,6 +79,8 @@ for epoch in range(epochs):
     train_labels_numpy = train_labels_numpy[indices]
 
     num_batches = len(train_images_numpy) // batch_size
+
+    total_loss = 0
 
     for i in range(num_batches):
         start_idx = i * batch_size
@@ -91,8 +96,7 @@ for epoch in range(epochs):
 
         loss = cross_entropy_loss(logit, Y)
 
-        # Print loss for the current batch
-        print(f"  Batch {i + 1}/{num_batches}, Loss: {loss:.4f}")
+        total_loss += loss
 
         gradient = logit - Y
         model.backward(gradient)
@@ -100,9 +104,29 @@ for epoch in range(epochs):
         model.update_params()
         model.zero_gradient()
 
+        prob = model.forward(batch_images)
+        x_pred = np.argmax(prob, axis=1)
+        accuracy = compute_accuracy(x_pred, batch_labels)
+
+    print(f"Epoch : {epoch}, loss {total_loss/num_batches}, accuracy: {accuracy}")
+    losses.append(total_loss)
+
 
 prob = model.forward(test_images_numpy)
 x_pred = np.argmax(prob, axis=1)
 accuracy = compute_accuracy(x_pred, test_labels_numpy)
 print(f"Accuracy: {accuracy * 100:.2f}%")
+
+loss_plot = plot_loss_curve(epochs=len(losses), losses=losses)
+
+loss_plot.savefig('./plots/loss_curve_cifar.png')
+
+cm = confusion_matrix(test_labels_numpy, x_pred)
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.xlabel('Predicted Label')
+plt.ylabel('True Label')
+plt.title('Confusion Matrix')
+plt.savefig('./plots/confusion_cifar.png')
 
