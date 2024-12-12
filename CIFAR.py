@@ -19,8 +19,12 @@ from max_pool import MaxPool, max_pool_backward
 
 
 transform = transforms.Compose([transforms.ToTensor()])
-train_dataset = torchvision.datasets.CIFAR10(root='data', train=True, download=False, transform=transform)
-test_dataset = torchvision.datasets.CIFAR10(root='data', train=False, download=False, transform=transform)
+train_dataset = torchvision.datasets.CIFAR10(
+    root="data", train=True, download=False, transform=transform
+)
+test_dataset = torchvision.datasets.CIFAR10(
+    root="data", train=False, download=False, transform=transform
+)
 
 
 image, label = train_dataset[10]
@@ -28,14 +32,30 @@ image, label = train_dataset[10]
 image = np.transpose(image.numpy(), (1, 2, 0))
 
 # CIFAR-10 class names
-classes = ('airplane', 'automobile', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+classes = (
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck",
+)
 
-train_images_tensor = torch.stack([train_dataset[i][0] for i in range(len(train_dataset))])
-train_labels_tensor = torch.tensor([train_dataset[i][1] for i in range(len(train_dataset))])
+train_images_tensor = torch.stack(
+    [train_dataset[i][0] for i in range(len(train_dataset))]
+)
+train_labels_tensor = torch.tensor(
+    [train_dataset[i][1] for i in range(len(train_dataset))]
+)
 
 test_images_tensor = torch.stack([test_dataset[i][0] for i in range(len(test_dataset))])
-test_labels_tensor = torch.tensor([test_dataset[i][1] for i in range(len(test_dataset))])
+test_labels_tensor = torch.tensor(
+    [test_dataset[i][1] for i in range(len(test_dataset))]
+)
 
 train_images_numpy = train_images_tensor.numpy()
 train_labels_numpy = train_labels_tensor.numpy()
@@ -105,20 +125,3 @@ correct_predictions = np.sum(predictions == test_labels_numpy)
 accuracy = correct_predictions / len(test_labels_numpy)
 
 print(f"Accuracy: {accuracy * 100:.2f}%")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

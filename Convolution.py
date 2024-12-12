@@ -16,9 +16,8 @@ class cnn:
             self.kernel_size,
             self.kernel_size,
         )
-        self.kernels = np.abs(np.random.rand(*self.kernels_shape)  * 0.01)
-        self.biases = np.zeros(self.out_channel)  * 0.01
-
+        self.kernels = np.abs(np.random.rand(*self.kernels_shape) * 0.01)
+        self.biases = np.zeros(self.out_channel) * 0.01
 
     def convolve(self, img, kernel):
 
@@ -47,7 +46,6 @@ class cnn:
 
     def forward(self, X):
         self.input = X
-
 
         if self.padding > 0:
             # Apply padding to all images in the batch
@@ -106,8 +104,7 @@ class cnn:
                             weight_gradient[l, m] = (patch * curr_dl_dz).sum()
 
                     dl_dk[b, o, k] = weight_gradient
-        self.weight_gradient = np.sum(dl_dk, axis=0) 
-
+        self.weight_gradient = np.sum(dl_dk, axis=0)
 
         dl_db = np.zeros(self.out_channel)
 
@@ -116,8 +113,6 @@ class cnn:
                 dl_db[o] = dl_db[o] + dl_dz[b, o].sum()
 
         self.bias_gradient = dl_db
-
-      
 
         dl_dx = np.zeros(self.input.shape)
 
@@ -136,24 +131,25 @@ class cnn:
             constant_values=0,
         )
         rot_kernels = self.kernels[:, :, ::-1, ::-1]
-        B,C, H,W = self.input.shape
+        B, C, H, W = self.input.shape
         for b in range(B):
             for c in range(C):
                 y = np.zeros((H, W))
                 for o in range(self.out_channel):
-                    current = self.conv2d_stride_1(dl_dz_padded[b, o], rot_kernels[o, c], y.shape)
+                    current = self.conv2d_stride_1(
+                        dl_dz_padded[b, o], rot_kernels[o, c], y.shape
+                    )
                     y += current
-                self.assigning_value_matrix(b, c, dl_dx, y)    
+                self.assigning_value_matrix(b, c, dl_dx, y)
 
         self.dl_dx = dl_dx
 
         return self.dl_dx
-    
-    def update_params(self, lr, reg = 0.01):
-        self.kernels -= lr * self.weight_gradient  + reg * self.kernels
+
+    def update_params(self, lr, reg=0.01):
+        self.kernels -= lr * self.weight_gradient + reg * self.kernels
 
         self.biases -= lr * self.bias_gradient
-
 
     def conv2d_stride_1(self, X, K, out_shape):
         """It takes the image and does the convolution on it."""
@@ -168,14 +164,12 @@ class cnn:
                 j += 1
             i += 1
         return Y
-    
 
     def assigning_value_matrix(self, b, c, out, y):
         """Plat the y into the out matrix given batch size as b and c as channel"""
         for h in range(y.shape[0]):
             for w in range(y.shape[1]):
                 out[b, c, h, w] = y[h, w]
-
 
     def zero_gradient(self):
         self.weight_gradient = np.zeros_like(self.weight_gradient)

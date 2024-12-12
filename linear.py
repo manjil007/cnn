@@ -22,7 +22,7 @@ class TwoLayerNetwork:
         self.B1 = np.zeros(self.hidden_size)
 
         self.W2 = np.abs(np.random.rand(self.hidden_size, self.out_size) * 0.01)
-        self.B2 = np.zeros(self.out_size) 
+        self.B2 = np.zeros(self.out_size)
 
     def _gradient_init(self):
         # Gradient initialization
@@ -46,24 +46,20 @@ class TwoLayerNetwork:
         dx2 = dz @ self.W2.T
 
         # Activation layer backpropagation,
-        dz1 =  act_der.backward(dx2)
-
+        dz1 = act_der.backward(dx2)
 
         self.dw1 = (dz1.T @ self.input).T / len(self.input)
         self.db1 = np.sum(dz1, axis=0) / len(self.input)
         dx1 = dz1 @ self.W1.T / len(self.input)
 
         return dx1
-    
-    def update_params(self, lr, reg = 0.01):
+
+    def update_params(self, lr, reg=0.01):
         self.W1 -= lr * self.dw1 + reg * self.W1
         self.B1 -= lr * self.db1
 
         self.W2 -= lr * self.dw2 + reg * self.W2
         self.B2 -= lr * self.db2
 
-
     def zero_gradient(self):
         self._gradient_init()
-
-

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class ReLU:
     def __init__(self):
         self.cache = None

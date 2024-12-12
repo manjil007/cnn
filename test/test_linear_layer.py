@@ -35,4 +35,3 @@ if __name__ == "__main__":
     dz = linear_layer.backward(dz, act)
     print(f"Print the dl_dz[0, :20] : {dz[0, :20]}")
     print(f"checking the shape of input and it's gradient: {dz.shape == input.shape}")
-   
