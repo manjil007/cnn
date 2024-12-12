@@ -13,9 +13,8 @@ import gc
 
 import os
 import sys
-from CNN import LeNet5
+from cnn import LeNet5
 from utils import cross_entropy_loss, one_hot_y
-from max_pool import MaxPool, max_pool_backward
 
 
 transform = transforms.Compose([transforms.ToTensor()])
@@ -46,13 +45,13 @@ test_labels_numpy = test_labels_tensor.numpy()
 test_images_numpy = test_images_numpy[:50]
 test_labels_numpy = test_labels_numpy[:50]
 
-# train_images_numpy = train_images_numpy[:10000]
-# train_labels_numpy = train_labels_numpy[:]
+train_images_numpy = train_images_numpy
+train_labels_numpy = train_labels_numpy
 
-epochs = 5
+epochs = 3
 model = LeNet5(in_channel=3, lr=0.001)
 
-batch_size = 25000
+batch_size = 256
 
 
 for epoch in range(epochs):

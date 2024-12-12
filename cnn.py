@@ -20,7 +20,7 @@ class LeNet5:
         self.relu2 = ReLU()
         self.fcrelu = ReLU()
 
-        self.fc1 = TwoLayerNetwork(6400, hidden_size=120, out_size=10)
+        self.fc1 = TwoLayerNetwork(9216, hidden_size=120, out_size=10)
 
     def forward(self, x: np.ndarray):
         # Pass through the first convolutional layer
