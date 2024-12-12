@@ -10,7 +10,7 @@ import torchvision.transforms as transforms
 import torchvision
 
 
-from cnn import LeNet5
+from CNN import LeNet5
 from utils import cross_entropy_loss, one_hot_y, compute_accuracy, softmax
 
 
