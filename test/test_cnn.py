@@ -10,10 +10,10 @@ from Convolution import cnn
 
 def test_cnn(x: np.ndarray, kernel_size: int, stride: int, padding: int):
     in_channel = x.shape[1]
-    out_channel = 6
+    out_channel = 2
     cnn_model = cnn(in_channel, out_channel, kernel_size, stride, padding)
     output = cnn_model.forward(x)
-    dl_dk, dl_db, dl_dx = cnn_model.backward(output)
+    dl_dx = cnn_model.backward(output)
 
     print("Shape of input = ", x.shape)
     print(
@@ -30,9 +30,10 @@ def test_cnn(x: np.ndarray, kernel_size: int, stride: int, padding: int):
 
 
 if __name__ == "__main__":
+    np.random.seed(5)
     stride = 1
     padding = 0
-    input = np.random.rand(5, 3, 6, 6)
+    input = np.random.randint(1, 2,(1, 1, 3, 3))
     kernel_size = 2
 
     test_cnn(input, kernel_size, stride, padding)

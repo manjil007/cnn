@@ -4,6 +4,7 @@ import scipy.signal as signal
 
 class cnn:
     def __init__(self, in_channel, out_channel, kernel_size, stride, padding):
+
         self.in_channel = in_channel
         self.out_channel = out_channel
         self.kernel_size = kernel_size
@@ -15,8 +16,8 @@ class cnn:
             self.kernel_size,
             self.kernel_size,
         )
-        self.kernels = np.random.rand(*self.kernels_shape) * 0.01
-        self.biases = np.random.rand(self.out_channel)
+        self.kernels = np.abs(np.random.rand(*self.kernels_shape)  * 0.01)
+        self.biases = np.zeros(self.out_channel)  * 0.01
 
 
     def convolve(self, img, kernel):
@@ -45,6 +46,9 @@ class cnn:
         return convoluted_output
 
     def forward(self, X):
+        self.input = X
+
+
         if self.padding > 0:
             # Apply padding to all images in the batch
             X_padded = np.pad(
@@ -65,8 +69,7 @@ class cnn:
         output_h = (input_h - self.kernel_size) // self.stride + 1
         output_w = (input_w - self.kernel_size) // self.stride + 1
         self.output_shape = (batch_size, self.out_channel, output_h, output_w)
-        self.output = np.zeros((batch_size, self.out_channel, output_h, output_w))
-        self.input = X_padded
+        self.output = np.zeros(self.output_shape)
 
         for i, image in enumerate(X_padded):
             for j in range(self.out_channel):
@@ -89,12 +92,12 @@ class cnn:
             )
         )
 
-        for i in range(self.input.shape[0]):
+        for b in range(self.input.shape[0]):
             weight_gradient = np.zeros((self.kernel_size, self.kernel_size))
-            for j in range(self.out_channel):
+            for o in range(self.out_channel):
                 for k in range(self.in_channel):
-                    curr_x = self.input[i, k]  # dz_dk
-                    curr_dl_dz = dl_dz[i, j]  # k_h, k_w = curr_dl_dz.shape
+                    curr_x = self.input[b, k]  # dz_dk
+                    curr_dl_dz = dl_dz[b, o]  # k_h, k_w = curr_dl_dz.shape
                     for l in range(self.kernel_size):
                         for m in range(self.kernel_size):
                             patch = curr_x[
@@ -102,20 +105,19 @@ class cnn:
                             ]
                             weight_gradient[l, m] = (patch * curr_dl_dz).sum()
 
-                    dl_dk[i, j, k] = weight_gradient
-        self.weight_gradient = np.sum(dl_dk, axis=0)
+                    dl_dk[b, o, k] = weight_gradient
+        self.weight_gradient = np.sum(dl_dk, axis=0) 
 
-        # print("dl_dk = ", dl_dk[0][1][2])
 
         dl_db = np.zeros(self.out_channel)
 
-        for i in range(dl_dz.shape[0]):
-            for j in range(dl_dz.shape[1]):
-                dl_db[j] = dl_db[j] + dl_dz[i, j].sum()
+        for b in range(dl_dz.shape[0]):
+            for o in range(dl_dz.shape[1]):
+                dl_db[o] = dl_db[o] + dl_dz[b, o].sum()
 
         self.bias_gradient = dl_db
 
-        # print("dl_db = ", dl_db[0])
+      
 
         dl_dx = np.zeros(self.input.shape)
 
@@ -134,36 +136,47 @@ class cnn:
             constant_values=0,
         )
         rot_kernels = self.kernels[:, :, ::-1, ::-1]
-
-        for i in range(dl_dz_padded.shape[0]):
-            y = np.zeros((self.in_channel, self.input.shape[2], self.input.shape[3]))
-            for j in range(self.out_channel):
-                for k in range(self.in_channel):
-                    curr_kernel = rot_kernels[j, k]
-                    curr_dl_dz = dl_dz_padded[i, j]
-                    out = np.zeros((self.input.shape[2:]))
-                    for l in range(out.shape[0]):
-                        for m in range(out.shape[1]):
-                            patch = curr_dl_dz[
-                                l : l + self.kernel_size, m : m + self.kernel_size
-                            ]
-                            if patch.shape != curr_kernel.shape:
-                                print("not same shape")
-                            out[l, m] = (patch * curr_kernel).sum()
-                    y[k] += out
-
-            for p in range(self.in_channel):
-                for n in range(self.input.shape[2]):
-                    for o in range(self.input.shape[3]):
-                        dl_dx[i, p, n, o] = y[p, n, o]
+        B,C, H,W = self.input.shape
+        for b in range(B):
+            for c in range(C):
+                y = np.zeros((H, W))
+                for o in range(self.out_channel):
+                    current = self.conv2d_stride_1(dl_dz_padded[b, o], rot_kernels[o, c], y.shape)
+                    y += current
+                self.assigning_value_matrix(b, c, dl_dx, y)    
 
         self.dl_dx = dl_dx
 
-        # print("dl_dx = ", dl_dx[0][1][2])
-
         return self.dl_dx
     
-    def update_params(self, lr):
-        self.kernels -= lr * self.weight_gradient
+    def update_params(self, lr, reg = 0.01):
+        self.kernels -= lr * self.weight_gradient  + reg * self.kernels
+
         self.biases -= lr * self.bias_gradient
 
+
+    def conv2d_stride_1(self, X, K, out_shape):
+        """It takes the image and does the convolution on it."""
+        Y = np.zeros(out_shape)
+        i = 0
+        k_h, k_w = K.shape
+        while i < out_shape[0]:
+            j = 0
+            while j < out_shape[1]:
+                curr_x = X[i : i + k_h, j : j + k_w]
+                Y[i, j] = (curr_x * K).sum()
+                j += 1
+            i += 1
+        return Y
+    
+
+    def assigning_value_matrix(self, b, c, out, y):
+        """Plat the y into the out matrix given batch size as b and c as channel"""
+        for h in range(y.shape[0]):
+            for w in range(y.shape[1]):
+                out[b, c, h, w] = y[h, w]
+
+
+    def zero_gradient(self):
+        self.weight_gradient = np.zeros_like(self.weight_gradient)
+        self.bias_gradient = np.zeros_like(self.bias_gradient)

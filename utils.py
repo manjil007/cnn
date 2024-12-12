@@ -33,3 +33,21 @@ def one_hot_y(Y, num_classes):
         temp[V] = 1
         res.append(temp)
     return np.asarray(res)
+
+
+
+def compute_accuracy(x_pred, y):
+        """
+        Compute the accuracy of current batch
+        :param x_pred: Probabilities from the model (N, num_classes)
+        :param y: Labels of instances in the batch
+        :return: The accuracy of the batch
+        """
+        correct = 0
+        for i, v in enumerate(x_pred):
+            index = np.argmax(v)
+            if index == y[i]:
+                correct += 1
+
+        acc = correct / len(y)
+        return acc
