@@ -52,4 +52,4 @@ class SingleConvolution:
         )
         kernal_180 = np.rot90(self.kernel, 2)
 
-        self.dl_dx = self._helper_forward(padded_dl_dz, kernal_180, (self.kernel.shape))
+        self.dl_dx = self._helper_forward(padded_dl_dz, kernal_180, (self.input.shape))
