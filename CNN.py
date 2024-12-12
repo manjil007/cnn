@@ -3,6 +3,7 @@ from linear import TwoLayerNetwork
 import numpy as np
 from utils import cross_entropy_loss, softmax
 from relu import ReLU
+from maxpool import MaxPool
 
 
 class LeNet5:
@@ -13,6 +14,8 @@ class LeNet5:
         )
         self.relu1 = ReLU()
 
+        self.max_pool1 = MaxPool(2)
+
         # Second convolutional layer: 16 filters, 5x5 kernel
         self.conv2 = cnn(
             in_channel=6, out_channel=16, kernel_size=5, stride=1, padding=0
@@ -20,16 +23,22 @@ class LeNet5:
         self.relu2 = ReLU()
         self.fcrelu = ReLU()
 
-        self.fc1 = TwoLayerNetwork(9216, hidden_size=120, out_size=10)
+        self.max_pool2 = MaxPool(2)
+
+        self.fc1 = TwoLayerNetwork(256, hidden_size=120, out_size=10)
 
     def forward(self, x: np.ndarray):
         # Pass through the first convolutional layer
         x = self.conv1.forward(x)
         x = self.relu1.forward(x)
 
+        x = self.max_pool1.forward(x)
+
         # Pass through the second convolutional layer
         x = self.conv2.forward(x)
         x = self.relu2.forward(x)
+
+        x = self.max_pool2.forward(x)
 
         self.flattened_size = x.shape
 
@@ -40,7 +49,6 @@ class LeNet5:
         return fc1_out
 
     def backward(self, gradient):
-
         dz = self.fc1.backward(gradient, self.fcrelu)
         dz = np.array(
             [
@@ -53,8 +61,12 @@ class LeNet5:
             ]
         )
 
+        dz = self.max_pool2.backward(dz)
+
         dz = self.relu2.backward(dz)
         dz = self.conv2.backward(dz)
+
+        dz = self.max_pool1.backward(dz)
 
         dz = self.relu1.backward(dz)
         dz = self.conv1.backward(dz)

@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def softmax(a):
@@ -50,3 +51,13 @@ def compute_accuracy(x_pred, y):
 
     acc = correct / len(y)
     return acc
+
+def plot_loss_curve(epochs, losses):
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.plot(range(1, epochs + 1), losses, marker='o', linestyle='-', label='Loss')
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Loss')
+    ax.set_title('Loss Curve')
+    ax.grid(True)
+    ax.legend()
+    return fig
