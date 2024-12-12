@@ -9,12 +9,9 @@ from torchvision import datasets
 import torchvision.transforms as transforms
 import torchvision
 
-import gc
 
-import os
-import sys
 from cnn import LeNet5
-from utils import cross_entropy_loss, one_hot_y
+from utils import cross_entropy_loss, one_hot_y, compute_accuracy, softmax
 
 
 transform = transforms.Compose([transforms.ToTensor()])
@@ -44,8 +41,8 @@ test_labels_numpy = test_labels_numpy[:50]
 train_images_numpy = train_images_numpy[:500]
 train_labels_numpy = train_labels_numpy[:500]
 
-epochs = 4
-model = LeNet5(in_channel=1, lr=0.001)
+epochs = 2
+model = LeNet5(in_channel=1, lr=1e-1)
 
 batch_size = 32
 
@@ -63,7 +60,8 @@ for epoch in range(epochs):
         batch_images = train_images_numpy[start_idx:end_idx]
         batch_labels = train_labels_numpy[start_idx:end_idx]
 
-        probabilities = model.forward(batch_images)
+        logits = model.forward(batch_images)
+        probabilities = softmax(logits)
         
         Y = one_hot_y(batch_labels, 10)
 
@@ -74,34 +72,24 @@ for epoch in range(epochs):
         print(f"  Batch {i + 1}/{num_batches}, Loss: {loss:.4f}")
 
         gradient = probabilities - Y
-
+    
         model.backward(gradient)
 
         model.update_params()
         
         model.zero_gradient()
 
-        probabilities = model.forward(batch_images)
-        predictions = np.argmax(probabilities)
-        correct_predictions = np.sum(predictions == batch_labels)
-        accuracy = correct_predictions / len(batch_labels
-                                             )
-
-        print(f"Accuracy: {accuracy * 100:.2f}%")
+        prob = model.forward(batch_images)
+        x_pred = np.argmax(prob, axis=1)
+        accuracy = compute_accuracy(x_pred, batch_labels)
     print(f"Epoch : {epoch}, loss {total_loss/num_batches}")
 
 
 
-probabilities = model.forward(test_images_numpy)
-
-predictions = np.argmax(probabilities)
-
-correct_predictions = np.sum(predictions == test_labels_numpy)
-
-accuracy = correct_predictions / len(test_labels_numpy)
-
+prob = model.forward(test_images_numpy)
+x_pred = np.argmax(prob, axis=1)
+accuracy = compute_accuracy(x_pred, batch_labels)
 print(f"Accuracy: {accuracy * 100:.2f}%")
-
 
 
 

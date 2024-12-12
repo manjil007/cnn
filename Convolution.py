@@ -4,7 +4,7 @@ import scipy.signal as signal
 
 class cnn:
     def __init__(self, in_channel, out_channel, kernel_size, stride, padding):
-        np.random.seed(5)
+
         self.in_channel = in_channel
         self.out_channel = out_channel
         self.kernel_size = kernel_size
@@ -16,8 +16,8 @@ class cnn:
             self.kernel_size,
             self.kernel_size,
         )
-        self.kernels = np.random.rand(*self.kernels_shape)  * 0.01
-        self.biases = np.zeros(self.out_channel)
+        self.kernels = np.abs(np.random.rand(*self.kernels_shape)  * 0.01)
+        self.biases = np.zeros(self.out_channel)  * 0.01
 
 
     def convolve(self, img, kernel):
@@ -108,7 +108,6 @@ class cnn:
                     dl_dk[b, o, k] = weight_gradient
         self.weight_gradient = np.sum(dl_dk, axis=0) 
 
-        # print("dl_dk = ", dl_dk[0][1][2])
 
         dl_db = np.zeros(self.out_channel)
 
@@ -118,7 +117,7 @@ class cnn:
 
         self.bias_gradient = dl_db
 
-        # print("dl_db = ", dl_db[0])
+      
 
         dl_dx = np.zeros(self.input.shape)
 
@@ -150,8 +149,9 @@ class cnn:
 
         return self.dl_dx
     
-    def update_params(self, lr):
-        self.kernels -= lr * self.weight_gradient
+    def update_params(self, lr, reg = 0.01):
+        self.kernels -= lr * self.weight_gradient  + reg * self.kernels
+
         self.biases -= lr * self.bias_gradient
 
 
@@ -178,6 +178,5 @@ class cnn:
 
 
     def zero_gradient(self):
-        self.dl_dx = np.zeros_like(self.dl_dx)
         self.weight_gradient = np.zeros_like(self.weight_gradient)
         self.bias_gradient = np.zeros_like(self.bias_gradient)
