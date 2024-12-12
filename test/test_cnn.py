@@ -23,9 +23,9 @@ def test_cnn(x: np.ndarray, kernel_size: int, stride: int, padding: int):
     print("Shape out output of forward function: ", output.shape)
     print(
         "Shape of partial derivative with respect to kernel (weight or filter): ",
-        dl_dk.shape,
+        cnn_model.weight_gradient.shape,
     )
-    print("Shape of partial derivative with respect to bias: ", dl_db.shape)
+    print("Shape of partial derivative with respect to bias: ", cnn_model.bias_gradient.shape)
     print("Shape of partial derivative with respect to input: ", dl_dx.shape)
 
 
