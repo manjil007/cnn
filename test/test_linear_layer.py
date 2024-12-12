@@ -8,7 +8,7 @@ sys.path.append(os.getcwd())
 import numpy as np
 
 from linear import TwoLayerNetwork
-from activation import Activation
+from relu import ReLU
 from utils import *
 
 
@@ -21,17 +21,18 @@ if __name__ == "__main__":
     y = np.random.randint(0, 10, batch)
     one_hot_y = one_hot_y(y, num_classes=10)
 
-    act: Activation = Activation("relu")
+    act: ReLU = ReLU()
 
-    linear_layer: TwoLayerNetwork = TwoLayerNetwork(input)
-    logits = linear_layer.forward(act)
+    linear_layer: TwoLayerNetwork = TwoLayerNetwork(feature)
+    logits = linear_layer.forward(input, act)
 
     prob = softmax(logits)
     loss = cross_entropy_loss(logits, one_hot_y)
-    print(loss)
+    print(f"Loss: {loss}")
 
     dz = logits - one_hot_y
 
     dz = linear_layer.backward(dz, act)
-    print("checking the shape of input and it's gradient")
-    print(dz.shape == input.shape)
+    print(f"Print the dl_dz[0, :20] : {dz[0, :20]}")
+    print(f"checking the shape of input and it's gradient: {dz.shape == input.shape}")
+   
