@@ -49,7 +49,7 @@ train_images_numpy = train_images_numpy[:6000]
 train_labels_numpy = train_labels_numpy[:6000]
 
 
-epochs = 10
+epochs = 5
 model = LeNet5(in_channel=1, lr=1e-1)
 
 batch_size = 120
